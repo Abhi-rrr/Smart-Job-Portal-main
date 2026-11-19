@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Portal</title>
+    <link rel="stylesheet" href="/css/applyjobs.css">
+   
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Job Application Portal</h1>
+            <p>Find your dream job from thousands of opportunities</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalJobs">0</div>
+                <div class="stat-label">Total Jobs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="companiesCount">0</div>
+                <div class="stat-label">Companies</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="newJobs">0</div>
+                <div class="stat-label">New This Week</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="jobType">Job Type</label>
+                    <select id="jobType">
+                        <option value="">All Types</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Freelance">Freelance</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="location">Location</label>
+                    <select id="location">
+                        <option value="">All Locations</option>
+                        <option value="Remote">Remote</option>
+                        <option value="New York">New York</option>
+                        <option value="San Francisco">San Francisco</option>
+                        <option value="London">London</option>
+                        <option value="Toronto">Toronto</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="category">Category</label>
+                    <select id="category">
+                        <option value="">All Categories</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Design">Design</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="search">Search</label>
+                    <input type="text" id="search" placeholder="Search jobs...">
+                </div>
+            </div>
+        </div>
+
+        <div class="jobs-grid" id="jobsGrid">
+            <!-- Jobs will be loaded here -->
+        </div>
+    </div>
+<!-- Replace the entire script section in your applyjobs.ejs with this single, unified script -->
+
+<script>
+    const userId = "{{ userId }}"; // Server-side userId
+    const jobsData = <%- JSON.stringify(jobs) %>;
+    const hasSkills = <%- hasSkills %>;
+    let filteredJobs = [...jobsData];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Show message if user has no skills
+        if (!hasSkills) {
+            showNoSkillsMessage();
+        }
+        
+        updateStats();
+        renderJobs(filteredJobs);
+        setupFilters();
+    });
+
+    function showNoSkillsMessage() {
+        const container = document.querySelector('.container');
+        const message = document.createElement('div');
+        message.className = 'no-skills-banner';
+        message.innerHTML = `
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center;">
+                <h3 style="color: #856404; margin: 0 0 10px 0;">📄 Upload Your Resume First</h3>
+                <p style="color: #856404; margin: 0;">Upload your resume on the dashboard to see job match percentages and get personalized recommendations.</p>
+                <a href="/user/dashboard" style="display: inline-block; margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">Go to Dashboard</a>
+            </div>
+        `;
+        container.insertBefore(message, container.querySelector('.stats'));
+    }
+
+    function updateStats() {
+        const totalJobs = jobsData.length;
+        const companies = new Set(jobsData.map(job => job.company)).size;
+
+        const newJobs = jobsData.filter(job => {
+            const postedDate = new Date(job.createdAt);
+            const daysAgo = (Date.now() - postedDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysAgo <= 7;
+        }).length;
+
+        document.getElementById('totalJobs').textContent = totalJobs;
+        document.getElementById('companiesCount').textContent = companies;
+        document.getElementById('newJobs').textContent = newJobs;
+    }
+
+    function renderJobs(jobs) {
+        const jobsGrid = document.getElementById('jobsGrid');
+
+        if (jobs.length === 0) {
+            jobsGrid.innerHTML = '<div class="no-jobs">No jobs found matching your criteria.</div>';
+            return;
+        }
+
+        jobsGrid.innerHTML = jobs.map(job => {
+            const title = job.title || 'Untitled';
+            const company = job.company || 'Unknown Company';
+            const type = job.jobType || 'N/A';
+            const location = job.location || 'N/A';
+            const category = job.industry || 'N/A';
+            const salary = job.salary ? job.salary : (job.salaryMin && job.salaryMax ? `${job.salaryMin}-${job.salaryMax}` : 'N/A');
+            const description = job.description || 'No description provided.';
+            const requirements = Array.isArray(job.requirements) ? job.requirements.join(', ') : (job.requirements || 'Not specified');
+            const postedAt = timeAgo(new Date(job.createdAt));
+
+            // Format match score with proper styling
+            let matchDisplay = '';
+            if (job.matchScore !== null && job.matchScore !== undefined) {
+                const percentage = (job.matchScore * 100).toFixed(1);
+                const matchClass = job.matchScore >= 0.7 ? 'high-match' : 
+                                 job.matchScore >= 0.4 ? 'medium-match' : 'low-match';
+                matchDisplay = `<div class="match-score ${matchClass}">${percentage}% match</div>`;
+            } else if (hasSkills) {
+                matchDisplay = '<div class="match-score no-match">No match data</div>';
+            }
+
+            return `
+                <div class="job-card ${job.matchScore >= 0.5 ? 'recommended' : ''}">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-title">${title}</div>
+                            <div class="company-name">${company}</div>
+                            ${matchDisplay}
+                        </div>
+                        <div class="job-type">${type}</div>
+                    </div>
+
+                    <div class="job-details">
+                        <div class="job-detail"><i>📍</i> ${location}</div>
+                        <div class="job-detail"><i>🏷️</i> ${category}</div>
+                        <div class="job-detail"><i>⏰</i> Posted ${postedAt}</div>
+                    </div>
+
+                    <div class="salary">${salary}</div>
+                    <div class="job-description">${description}</div>
+                    <div class="job-detail"><i>📋</i> <strong>Requirements:</strong> ${requirements}</div>
+
+                    <button class="apply-btn" onclick="applyJob('${job._id}')">Apply Now</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function setupFilters() {
+        const jobType = document.getElementById('jobType');
+        const location = document.getElementById('location');
+        const category = document.getElementById('category');
+        const search = document.getElementById('search');
+
+        [jobType, location, category, search].forEach(filter => {
+            filter.addEventListener('change', filterJobs);
+            filter.addEventListener('input', filterJobs);
+        });
+    }
+
+    function filterJobs() {
+        const jobType = document.getElementById('jobType').value;
+        const location = document.getElementById('location').value;
+        const category = document.getElementById('category').value;
+        const search = document.getElementById('search').value.toLowerCase();
+
+        filteredJobs = jobsData.filter(job => {
+            const matchesType = !jobType || job.jobType === jobType;
+            const matchesLocation = !location || job.location === location;
+            const matchesCategory = !category || job.industry === category;
+            const matchesSearch = !search ||
+                job.title.toLowerCase().includes(search) ||
+                job.company.toLowerCase().includes(search) ||
+                job.description.toLowerCase().includes(search);
+
+            return matchesType && matchesLocation && matchesCategory && matchesSearch;
+        });
+
+        renderJobs(filteredJobs);
+    }
+
+    function applyJob(jobId) {
+        fetch('/user/apply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ jobId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message || 'Application submitted!');
+        })
+        .catch(err => {
+            console.error('Application failed:', err);
+            alert('There was an error applying for the job.');
+        });
+    }
+
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        const intervals = [
+            { label: 'year', seconds: 31536000 },
+            { label: 'month', seconds: 2592000 },
+            { label: 'week', seconds: 604800 },
+            { label: 'day', seconds: 86400 },
+            { label: 'hour', seconds: 3600 },
+            { label: 'minute', seconds: 60 },
+            { label: 'second', seconds: 1 }
+        ];
+
+        for (const interval of intervals) {
+            const count = Math.floor(seconds / interval.seconds);
+            if (count >= 1) {
+                return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+            }
+        }
+        return 'Just now';
+    }
+</script>
+
+<style>
+/* Add these CSS styles for match scores */
+.match-score {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.high-match {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.medium-match {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.low-match {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.no-match {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.job-card.recommended {
+    border: 2px solid #28a745;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.1);
+}
+
+.job-card.recommended::before {
+    content: "⭐ Recommended";
+    position: absolute;
+    top: -2px;
+    right: 10px;
+    background: #28a745;
+    color: rgb(15, 1, 1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.job-card {
+    position: relative;
+}
+
+.no-jobs {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+    font-size: 16px;
+}
+</style>
+
+</body>
+</html>

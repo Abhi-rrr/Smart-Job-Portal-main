@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post a Job - Recruiter Portal</title>
+  <link rel="stylesheet" href="/css/job_post.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Post a New Job</h1>
+      <p>Fill in the details below to create your job posting</p>
+    </div>
+
+    <div class="form-container">
+      <form id="jobForm" action="/user/post-job" method="post">
+        <div class="form-group">
+          <label for="jobTitle">Job Title</label>
+          <input type="text" id="jobTitle" name="jobTitle" placeholder="e.g., Senior Software Engineer" required />
+        </div>
+
+        <!-- Company Name from backend recruiter info, not input by user -->
+        <% if (user && user.companyName) { %>
+          <div class="form-group">
+            <label>Company Name</label>
+            <input type="text" value="<%= user.companyName %>" disabled />
+          </div>
+        <% } %>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="e.g., San Francisco" required />
+          </div>
+
+          <div class="form-group">
+            <label for="industry">Industry</label>
+            <select id="industry" name="industry" required>
+              <option value="">Select Industry</option>
+              <option value="Technology">Technology</option>
+              <option value="Finance">Finance</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Education">Education</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="Retail">Retail</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Job Type</label>
+          <div class="job-type-group">
+            <div class="job-type-option" onclick="selectJobType(this, 'full-time')">
+              <input type="radio" name="jobType" value="full-time" id="fullTime" required />
+              <label for="fullTime">Full-time</label>
+            </div>
+            <div class="job-type-option" onclick="selectJobType(this, 'part-time')">
+              <input type="radio" name="jobType" value="part-time" id="partTime" />
+              <label for="partTime">Part-time</label>
+            </div>
+            <div class="job-type-option" onclick="selectJobType(this, 'contract')">
+              <input type="radio" name="jobType" value="contract" id="contract" />
+              <label for="contract">Contract</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Salary Range</label>
+          <div class="salary-group">
+            <input type="number" id="salaryMin" name="salaryMin" placeholder="120000" required />
+            <span class="salary-separator">to</span>
+            <input type="number" id="salaryMax" name="salaryMax" placeholder="150000" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Job Description</label>
+          <textarea id="description" name="description" placeholder="Describe the job in detail..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="requirements">Requirements</label>
+          <textarea id="requirements" name="requirements" placeholder="Skills, experience, education..." required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">📝 Post Job</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function selectJobType(element, value) {
+      document.querySelectorAll('.job-type-option').forEach(option => {
+        option.classList.remove('selected');
+      });
+      element.classList.add('selected');
+      document.querySelector(`input[value="${value}"]`).checked = true;
+    }
+
+    document.getElementById('salaryMin').addEventListener('input', function (e) {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    document.getElementById('salaryMax').addEventListener('input', function (e) {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+  </script>
+
+  <!-- ✅ Alert after successful or failed job post -->
+  <% if (typeof success !== 'undefined') { %>
+    <script>
+      <% if (success === 'true') { %>
+        alert("✅ Job posted successfully!");
+      <% } else if (success === 'false') { %>
+        alert("❌ Failed to post job.");
+      <% } %>
+    </script>
+  <% } %>
+</body>
+</html>

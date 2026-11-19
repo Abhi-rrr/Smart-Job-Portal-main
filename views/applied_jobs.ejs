@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applied Jobs Dashboard</title>
+    <link rel="stylesheet" href="/css/applied_jobs.css">
+    
+</head>
+<body class="light-theme">
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        <h1>Applied Jobs Dashboard</h1>
+        <p>Track your job applications and stay organized</p>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalJobs">0</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="thisMonth">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgSalary">$0</div>
+                <div class="stat-label">Avg Salary Range</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="topIndustry">-</div>
+                <div class="stat-label">Top Industry</div>
+            </div>
+        </div>
+
+        <div class="jobs-grid" id="jobsGrid">
+            <!-- Jobs will be populated here -->
+        </div>
+    </div>
+
+    <script>
+    const jobs = <%- JSON.stringify(appliedJobs) %>;
+
+    function formatDate(date) {
+        return new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        }).format(new Date(date));
+    }
+
+    function calculateStats() {
+        const totalJobs = jobs.length;
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        const thisMonth = jobs.filter(job => {
+            const jobDate = new Date(job.createdAt);
+            return jobDate.getMonth() === currentMonth && jobDate.getFullYear() === currentYear;
+        }).length;
+
+        let avgSalary = 0;
+        let count = 0;
+
+        jobs.forEach(job => {
+            if (job.salary && job.salary.includes('-')) {
+                const [min, max] = job.salary.split('-').map(s => parseInt(s));
+                if (!isNaN(min) && !isNaN(max)) {
+                    avgSalary += (min + max) / 2;
+                    count++;
+                }
+            }
+        });
+
+        avgSalary = count > 0 ? avgSalary / count : 0;
+
+        const industries = {};
+        jobs.forEach(job => {
+            if (job.category) {
+                industries[job.category] = (industries[job.category] || 0) + 1;
+            }
+        });
+
+        const topIndustry = Object.keys(industries).reduce((a, b) =>
+            industries[a] > industries[b] ? a : b, '-');
+
+        document.getElementById('totalJobs').textContent = totalJobs;
+        document.getElementById('thisMonth').textContent = thisMonth;
+        document.getElementById('avgSalary').textContent = isNaN(avgSalary) ? '$0' : `$${Math.round(avgSalary).toLocaleString()}`;
+        document.getElementById('topIndustry').textContent = topIndustry || '-';
+    }
+
+    function renderJobs() {
+        const jobsGrid = document.getElementById('jobsGrid');
+
+        if (jobs.length === 0) {
+            jobsGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>No applications yet</h3>
+                    <p>Your applied jobs will appear here</p>
+                </div>
+            `;
+            return;
+        }
+
+        jobsGrid.innerHTML = jobs.map(job => `
+            <div class="job-card">
+                <div class="job-header">
+                    <div>
+                        <h3 class="job-title">${job.title}</h3>
+                        <div class="company">${job.company}</div>
+                        <div class="location">📍 ${job.location}</div>
+                    </div>
+                    <div class="job-type">${job.type}</div>
+                </div>
+
+                <div class="job-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Industry:</span>
+                        <span class="detail-value">${job.category}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Salary:</span>
+                        <span class="detail-value salary">${job.salary || 'N/A'}</span>
+                    </div>
+                </div>
+
+                <div class="description">
+                    <h4>Job Description</h4>
+                    <p>${job.description}</p>
+                </div>
+
+                <div class="requirements">
+                    <h4>Requirements</h4>
+                    <div class="requirements-list">${job.requirements || 'Not specified'}</div>
+                </div>
+
+                <div class="applied-date">
+                    Applied on ${formatDate(job.createdAt)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const button = document.querySelector('.theme-toggle');
+
+        if (body.classList.contains('light-theme')) {
+            body.classList.remove('light-theme');
+            body.classList.add('dark-theme');
+            button.textContent = '☀️ Light Mode';
+        } else {
+            body.classList.remove('dark-theme');
+            body.classList.add('light-theme');
+            button.textContent = '🌙 Dark Mode';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        calculateStats();
+        renderJobs();
+    });
+</script>

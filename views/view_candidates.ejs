@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Applicants</title>
+    <link rel="stylesheet" href="/css/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Job Applicants</h1>
+        
+        <% if (applicants.length === 0) { %>
+            <div class="no-applicants">
+                <div>No applicants have applied for this position yet.</div>
+                <div style="margin-top: 0.5rem; font-size: 0.875rem; opacity: 0.7;">
+                    Check back later or share the job posting to attract candidates.
+                </div>
+            </div>
+        <% } else { %>
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-number"><%= applicants.length %></div>
+                    <div class="stat-label">Total Applicants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        <% 
+                        const highMatches = applicants.filter(a => (a.matchPercentage || 0) >= 70).length;
+                        %>
+                        <%= highMatches %>
+                    </div>
+                    <div class="stat-label">High Matches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        <% 
+                        const avgMatch = applicants.length > 0 ? 
+                            Math.round(applicants.reduce((sum, a) => sum + (a.matchPercentage || 0), 0) / applicants.length) : 0;
+                        %>
+                        <%= avgMatch %>%
+                    </div>
+                    <div class="stat-label">Avg Match</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Phone No</th>
+                        <th>Skills</th>
+                        <th>Match %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% applicants.forEach(applicant => { %>
+                        <tr>
+                            <td><%= applicant.user?.username || '-' %></td>
+                            <td><%= applicant.user?.email || '-' %></td>
+                            <td><%= applicant.user?.firstName || '-' %></td>
+                            <td><%= applicant.user?.lastName || '-' %></td>
+                            <td><%= applicant.user?.phoneNo || '-' %></td>
+                            <td>
+                                <% if (applicant.user?.skills && applicant.user.skills.length > 0) { %>
+                                    <% applicant.user.skills.forEach(skill => { %>
+                                        <span class="skill-badge"><%= skill %></span>
+                                    <% }) %>
+                                <% } else { %>
+                                    <span style="color: #6b7280; font-style: italic;">No skills listed</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <%
+                                    // Get match percentage or zero if missing
+                                    const percent = applicant.matchPercentage || 0;
+                                    
+                                    let cls = 'match-low';
+                                    if (percent >= 70) cls = 'match-high';
+                                    else if (percent >= 40) cls = 'match-medium';
+                                %>
+                                <span class="match-percentage <%= cls %>"><%= percent %>%</span>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+</body>
+</html>

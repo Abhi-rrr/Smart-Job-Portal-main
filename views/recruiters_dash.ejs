@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Dashboard</title>
+    <link rel="stylesheet" href="/css/recruiter.css">
+    
+    </link>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="header">
+        <h1>Welcome Back!</h1>
+        <p>Complete your company profile to get started</p>
+    </div>
+
+    <div class="form-container">
+        <form id="companyForm">
+            <div class="form-group">
+                <label for="companyName">Company Name</label>
+                <input type="text" id="companyName" name="companyName" placeholder="Enter your company name" required value="<%= user.companyName || '' %>">
+            </div>
+
+            <div class="form-group">
+                <label for="companyField">Company Field</label>
+                <input type="text" id="companyField" name="companyField" placeholder="e.g., Technology, Healthcare, Finance" required value="<%= user.companyField || '' %>">
+            </div>
+
+            <div class="form-group">
+                <label for="hrPhone">HR Phone Number</label>
+                <input type="tel" id="hrPhone" name="hrPhone" placeholder="+1 (555) 123-4567" required value="<%= user.hrPhone || '' %>">
+            </div>
+        </form>
+    </div>
+
+    <div class="submit-section">
+        <button class="btn btn-update" onclick="updateCompanyInfo()">
+            <span class="icon">💾</span>
+            Update Company Info
+        </button>
+    </div>
+
+    <div class="action-buttons">
+        <form action="/user/job_post" method="GET" style="display: inline;">
+            <button class="btn btn-primary" type="submit">
+                <span class="icon">📝</span>
+                Post a New Job
+            </button>
+        </form>
+    </div>
+
+   <div class="jobs-section">
+  <% jobs.forEach(job => { %>
+    <% if (job.title) { %>
+      <div class="job-card">
+        <div class="job-title"><%= job.title %></div>
+        <div class="job-details">
+          <%= job.location %> | <%= job.category %>
+        </div>
+        <button class="btn btn-view" onclick="viewCandidates('<%= job._id %>')">
+          👥 View Candidates
+        </button>
+      </div>
+    <% } %>
+  <% }) %>
+</div>
+
+</div>
+    <script>
+        
+    function viewCandidates(jobId) {
+        window.location.href = `/user/view-applicants/${jobId}`;
+    }
+
+
+        // Form validation and submission
+        document.getElementById('companyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const companyName = document.getElementById('companyName').value;
+            const companyField = document.getElementById('companyField').value;
+            const hrPhone = document.getElementById('hrPhone').value;
+            
+            if (companyName && companyField && hrPhone) {
+                // Store company info (in a real app, this would be sent to a server)
+                const companyInfo = {
+                    name: companyName,
+                    field: companyField,
+                    phone: hrPhone
+                };
+                
+                // Enable the action buttons
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                });
+                
+                showNotification('Company information saved successfully!', 'success');
+            }
+        });
+
+        // Button click handlers
+        function updateCompanyInfo() {
+            const companyName = document.getElementById('companyName').value;
+            const companyField = document.getElementById('companyField').value;
+            const hrPhone = document.getElementById('hrPhone').value;
+            
+            if (!companyName || !companyField || !hrPhone) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Store company info (in a real app, this would be sent to a server)
+            const companyInfo = {
+                name: companyName,
+                field: companyField,
+                phone: hrPhone,
+                updatedAt: new Date().toISOString()
+            };
+            
+            showNotification('Company information updated successfully!', 'success');
+            
+            // Enable the action buttons after successful update
+            document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
+        }
+
+        function postNewJob() {
+            const companyName = document.getElementById('companyName').value;
+            
+            if (!companyName) {
+                showNotification('Please fill in your company information first', 'warning');
+                return;
+            }
+            
+            showNotification('Redirecting to job posting form...', 'info');
+            // In a real app, this would redirect to the job posting page
+            setTimeout(() => {
+                alert('Redirecting to job posting form...');
+            }, 1000);
+        }
+
+        
+
+        // Notification system
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Auto-save functionality
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                // Auto-save logic would go here
+                this.style.borderColor = this.value ? '#10b981' : 'rgba(255, 255, 255, 0.1)';
+            });
+        });
+
+        // Phone number formatting
+        document.getElementById('hrPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d{3})/, '($1) $2');
+            }
+            e.target.value = value;
+        });
+        function updateCompanyInfo() {
+    const companyName = document.getElementById('companyName').value;
+    const companyField = document.getElementById('companyField').value;
+    const hrPhone = document.getElementById('hrPhone').value;
+
+    if (!companyName || !companyField || !hrPhone) {
+        showNotification('Please fill in all required fields', 'warning');
+        return;
+    }
+
+    fetch('/user/update-recruiter-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, companyField, hrPhone })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+        showNotification('Company info updated successfully!', 'success');
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification('Failed to update recruiter info', 'warning');
+    });
+}
+
+    </script>
+</body>
+</html>

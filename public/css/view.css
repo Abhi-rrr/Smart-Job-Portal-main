@@ -1,0 +1,257 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+            letter-spacing: -0.02em;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr {
+            position: relative;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-applicants {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            color: #9ca3af;
+        }
+
+        .no-applicants::before {
+            content: '📋';
+            display: block;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Skill badges */
+        .skill-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #e0e7ff;
+            padding: 6px 12px;
+            margin: 3px 6px 3px 0;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Match percentage styling */
+        .match-percentage {
+            font-weight: 700;
+            font-size: 15px;
+            padding: 8px 16px;
+            border-radius: 25px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+        }
+
+        .match-high {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(59, 130, 246, 0.1));
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #86efac;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+        }
+
+        .match-medium {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border-color: rgba(251, 191, 36, 0.4);
+            color: #fde047;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+        }
+
+        .match-low {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 127, 0.1));
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+        }
+
+        /* User info styling */
+        td:first-child {
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        td:nth-child(2) {
+            color: #94a3b8;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .stats-bar {
+                gap: 1rem;
+            }
+
+            .stat-card {
+                min-width: 100px;
+                padding: 0.75rem 1rem;
+            }
+
+            th, td {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .skill-badge {
+                font-size: 11px;
+                padding: 4px 8px;
+                margin: 2px 4px 2px 0;
+            }
+
+            .match-percentage {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+        }
+
+        /* Loading animation for future use */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+    
